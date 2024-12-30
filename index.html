@@ -2,63 +2,130 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Pagos</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+            padding: 16px;
+            background-color: #f0f2f5;
         }
+
         .container {
-            background-color: #f5f5f5;
+            background-color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 100%;
+            margin: 0 auto;
         }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            text-align: center;
+        }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
+
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
         }
+
         input[type="time"] {
-            width: 200px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            background-color: white;
         }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .button-container {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
         button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #calcularButton {
             background-color: #007bff;
             color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-right: 10px;
         }
-        button:hover {
+
+        #calcularButton:hover {
             background-color: #0056b3;
         }
-        #resultado {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            display: none;
-        }
+
         #copyButton {
             background-color: #28a745;
+            color: white;
             display: none;
         }
+
         #copyButton:hover {
             background-color: #218838;
         }
-        .button-container {
+
+        #resultado {
             margin-top: 20px;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            display: none;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+            white-space: pre-line;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 500px;
+            }
+
+            .button-container {
+                grid-template-columns: 1fr 1fr;
+            }
         }
     </style>
 </head>
@@ -73,15 +140,13 @@
             <label for="horaFin">Hora de Finalización:</label>
             <input type="time" id="horaFin" required>
         </div>
-        <div class="form-group">
-            <label>
-                <input type="checkbox" id="adelantarProxima">
-                Adelantar próxima
-            </label>
+        <div class="checkbox-container">
+            <input type="checkbox" id="adelantarProxima">
+            <label for="adelantarProxima">Adelantar próxima</label>
         </div>
         <div class="button-container">
-            <button onclick="calcularPago()">Generar Presupuesto</button>
-            <button id="copyButton" onclick="copiarAlPortapapeles()">Copiar al Portapapeles</button>
+            <button id="calcularButton" onclick="calcularPago()">Generar Presupuesto</button>
+            <button id="copyButton" onclick="copiarAlPortapapeles()">Copiar</button>
         </div>
         <div id="resultado"></div>
     </div>
@@ -103,27 +168,23 @@
                 return;
             }
 
-            // Convertir horas a minutos para el cálculo
             const [horaIni, minIni] = horaInicioInput.split(':').map(Number);
             const [horaFin, minFin] = horaFinInput.split(':').map(Number);
             
             let totalMinutos = (horaFin * 60 + minFin) - (horaIni * 60 + minIni);
-            if (totalMinutos < 0) totalMinutos += 24 * 60; // Si cruza la medianoche
+            if (totalMinutos < 0) totalMinutos += 24 * 60;
             
             const horasCompletas = Math.floor(totalMinutos / 60);
             const tieneMediaHora = totalMinutos % 60 >= 30;
             
-            // Calcular el pago por las horas
             let subtotal = (horasCompletas * VALOR_HORA) + (tieneMediaHora ? VALOR_MEDIA_HORA : 0);
             let total = subtotal + VIATICO;
 
-            // Si se adelanta la próxima, duplicar el monto
             if (adelantarProxima) {
                 total = total * 2;
                 subtotal = subtotal * 2;
             }
 
-            // Generar mensaje
             let mensaje = `Liliana, te transferí ${horasCompletas} hora${horasCompletas !== 1 ? 's' : ''}`;
             if (tieneMediaHora) mensaje += ' y media';
             mensaje += ` a $${VALOR_HORA} (subtotal: $${subtotal})`;
@@ -133,7 +194,7 @@
 
             resultadoDiv.textContent = mensaje;
             resultadoDiv.style.display = 'block';
-            copyButton.style.display = 'inline-block';
+            copyButton.style.display = 'block';
         }
 
         function copiarAlPortapapeles() {
@@ -143,17 +204,16 @@
             navigator.clipboard.writeText(texto)
                 .then(() => {
                     const copyButton = document.getElementById('copyButton');
-                    const textoOriginal = copyButton.textContent;
                     copyButton.textContent = '¡Copiado!';
                     copyButton.style.backgroundColor = '#218838';
                     
                     setTimeout(() => {
-                        copyButton.textContent = textoOriginal;
+                        copyButton.textContent = 'Copiar';
                         copyButton.style.backgroundColor = '#28a745';
                     }, 2000);
                 })
                 .catch(err => {
-                    alert('Error al copiar al portapapeles: ' + err);
+                    alert('Error al copiar: ' + err);
                 });
         }
     </script>
