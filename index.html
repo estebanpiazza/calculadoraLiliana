@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Pagos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="time"] {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #resultado {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        #copyButton {
+            background-color: #28a745;
+            display: none;
+        }
+        #copyButton:hover {
+            background-color: #218838;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Pagos</h1>
+        <div class="form-group">
+            <label for="horaInicio">Hora de Inicio:</label>
+            <input type="time" id="horaInicio" required>
+        </div>
+        <div class="form-group">
+            <label for="horaFin">Hora de Finalización:</label>
+            <input type="time" id="horaFin" required>
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="adelantarProxima">
+                Adelantar próxima
+            </label>
+        </div>
+        <div class="button-container">
+            <button onclick="calcularPago()">Generar Presupuesto</button>
+            <button id="copyButton" onclick="copiarAlPortapapeles()">Copiar al Portapapeles</button>
+        </div>
+        <div id="resultado"></div>
+    </div>
+
+    <script>
+        const VALOR_HORA = 3000;
+        const VALOR_MEDIA_HORA = 1500;
+        const VIATICO = 1670;
+
+        function calcularPago() {
+            const horaInicioInput = document.getElementById('horaInicio').value;
+            const horaFinInput = document.getElementById('horaFin').value;
+            const adelantarProxima = document.getElementById('adelantarProxima').checked;
+            const resultadoDiv = document.getElementById('resultado');
+            const copyButton = document.getElementById('copyButton');
+
+            if (!horaInicioInput || !horaFinInput) {
+                alert('Por favor, ingrese ambas horas');
+                return;
+            }
+
+            // Convertir horas a minutos para el cálculo
+            const [horaIni, minIni] = horaInicioInput.split(':').map(Number);
+            const [horaFin, minFin] = horaFinInput.split(':').map(Number);
+            
+            let totalMinutos = (horaFin * 60 + minFin) - (horaIni * 60 + minIni);
+            if (totalMinutos < 0) totalMinutos += 24 * 60; // Si cruza la medianoche
+            
+            const horasCompletas = Math.floor(totalMinutos / 60);
+            const tieneMediaHora = totalMinutos % 60 >= 30;
+            
+            // Calcular el pago por las horas
+            let subtotal = (horasCompletas * VALOR_HORA) + (tieneMediaHora ? VALOR_MEDIA_HORA : 0);
+            let total = subtotal + VIATICO;
+
+            // Si se adelanta la próxima, duplicar el monto
+            if (adelantarProxima) {
+                total = total * 2;
+                subtotal = subtotal * 2;
+            }
+
+            // Generar mensaje
+            let mensaje = `Liliana, te transferí ${horasCompletas} hora${horasCompletas !== 1 ? 's' : ''}`;
+            if (tieneMediaHora) mensaje += ' y media';
+            mensaje += ` a $${VALOR_HORA} (subtotal: $${subtotal})`;
+            mensaje += `, más viáticos por $${VIATICO}`;
+            if (adelantarProxima) mensaje += ' (incluye adelanto de la próxima)';
+            mensaje += `.\nTotal: $${total}`;
+
+            resultadoDiv.textContent = mensaje;
+            resultadoDiv.style.display = 'block';
+            copyButton.style.display = 'inline-block';
+        }
+
+        function copiarAlPortapapeles() {
+            const resultadoDiv = document.getElementById('resultado');
+            const texto = resultadoDiv.textContent;
+            
+            navigator.clipboard.writeText(texto)
+                .then(() => {
+                    const copyButton = document.getElementById('copyButton');
+                    const textoOriginal = copyButton.textContent;
+                    copyButton.textContent = '¡Copiado!';
+                    copyButton.style.backgroundColor = '#218838';
+                    
+                    setTimeout(() => {
+                        copyButton.textContent = textoOriginal;
+                        copyButton.style.backgroundColor = '#28a745';
+                    }, 2000);
+                })
+                .catch(err => {
+                    alert('Error al copiar al portapapeles: ' + err);
+                });
+        }
+    </script>
+</body>
+</html>
