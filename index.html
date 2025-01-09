@@ -33,6 +33,33 @@
             text-align: center;
         }
 
+        .valores-referencia {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .valores-referencia h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .valores-lista {
+            list-style: none;
+            display: grid;
+            gap: 8px;
+        }
+
+        .valores-lista li {
+            display: flex;
+            justify-content: space-between;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -132,6 +159,25 @@
 <body>
     <div class="container">
         <h1>Calculadora de Pagos</h1>
+        
+        <div class="valores-referencia">
+            <h2>Valores de Referencia</h2>
+            <ul class="valores-lista">
+                <li>
+                    <span>Valor por hora:</span>
+                    <strong>$3,500</strong>
+                </li>
+                <li>
+                    <span>Valor media hora:</span>
+                    <strong>$1,500</strong>
+                </li>
+                <li>
+                    <span>Viáticos:</span>
+                    <strong>$1,670</strong>
+                </li>
+            </ul>
+        </div>
+
         <div class="form-group">
             <label for="horaInicio">Hora de Inicio:</label>
             <input type="time" id="horaInicio" required>
@@ -153,7 +199,7 @@
 
     <script>
         const VALOR_HORA = 3500;
-        const VALOR_MEDIA_HORA = 1500;
+        const VALOR_MEDIA_HORA = 1750;
         const VIATICO = 1670;
 
         function calcularPago() {
